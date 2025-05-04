@@ -1,6 +1,6 @@
-import { StarbackConfig, StarbackInterface, StarType } from "./types"
-import Dot from "./types/dot"
-import Line from "./types/line"
+import { StarbackConfig, StarbackInterface, StarType } from './types'
+import Dot from './types/dot'
+import Line from './types/line'
 
 /**
  * Default Config
@@ -12,7 +12,7 @@ const StarbackDefaultConfig: StarbackConfig = {
 
   randomOpacity: true,
   showFps: false,
-  type: 'dot'
+  type: 'dot',
 }
 
 /**
@@ -27,8 +27,8 @@ export default class Starback implements StarbackInterface {
   public stars: StarType = null
   public canvas = null
   public starTypes = {
-    'dot': Dot,
-    'line': Line
+    dot: Dot,
+    line: Line,
   }
   public fps = 0
   private repeat = 0
@@ -37,7 +37,7 @@ export default class Starback implements StarbackInterface {
   private lastGenerated = 0
   private frontCallbacks: Function[] = []
   private behindCallbacks: Function[] = []
-
+  private destroyed = false
 
   /**
    * Starback library
@@ -55,7 +55,6 @@ export default class Starback implements StarbackInterface {
     // storing callbacks
     this.frontCallbacks = []
     this.behindCallbacks = []
-
 
     this.init()
   }
@@ -89,7 +88,6 @@ export default class Starback implements StarbackInterface {
     requestAnimationFrame((t) => this.render(t))
   }
 
-
   /**
    * Set background for the whole canvas
    */
@@ -112,9 +110,9 @@ export default class Starback implements StarbackInterface {
    * Draw the frame into the canvas
    */
   private draw() {
-    this.behindCallbacks.forEach(cb => cb(this.ctx))
+    this.behindCallbacks.forEach((cb) => cb(this.ctx))
     this.stars.draw()
-    this.frontCallbacks.forEach(cb => cb(this.ctx))
+    this.frontCallbacks.forEach((cb) => cb(this.ctx))
 
     // Show FPS if config.showFps is enabled
     if (this.config.showFps) this.drawFps()
@@ -159,10 +157,9 @@ export default class Starback implements StarbackInterface {
     this.ctx.fillText(`${this.fps} fps`, 10, 10)
   }
 
-
   /**
    * Canvas render function
-   * @param {DOMHighResTimeStamp} timestamp 
+   * @param {DOMHighResTimeStamp} timestamp
    */
   private render(timestamp) {
     if (!this.lastCalledTime) this.lastCalledTime = timestamp
@@ -176,8 +173,14 @@ export default class Starback implements StarbackInterface {
     this.draw()
     this.update()
 
+    if (this.destroyed) {
+      this.canvas = null
+      return
+    }
     requestAnimationFrame((t) => this.render(t))
   }
 
-
+  destroy() {
+    this.destroyed = true
+  }
 }
